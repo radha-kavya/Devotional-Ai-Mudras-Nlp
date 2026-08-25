@@ -1,4 +1,3 @@
-
 import streamlit as st
 import joblib
 import re
@@ -15,7 +14,6 @@ from nltk.stem import WordNetLemmatizer
 from nltk.tokenize import word_tokenize
 
 from gensim.models import KeyedVectors
-
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -26,21 +24,40 @@ from sklearn.metrics.pairwise import cosine_similarity
 st.set_page_config(
     page_title="Devotional AI Assistant",
     page_icon="🙏",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
 
 # ============================================================
-# CUSTOM CSS — VIOLET THEME
+# CLEAN COMPACT UI
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    /* ========================================================
-       MAIN APP BACKGROUND
-       ======================================================== */
+    /* REMOVE EXTRA TOP AND BOTTOM SPACE */
+
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 0.5rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+
+    header[data-testid="stHeader"] {
+        background: transparent !important;
+        height: 0rem !important;
+    }
+
+    footer {
+        visibility: hidden !important;
+        height: 0 !important;
+    }
+
+
+    /* MAIN BACKGROUND */
 
     .stApp {
         background:
@@ -65,15 +82,10 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       GENERAL TEXT
-       ======================================================== */
+    /* GENERAL TEXT */
 
-    .stApp,
     .stApp p,
-    .stApp label,
-    .stApp span,
-    .stApp div {
+    .stApp label {
         color: #2d1838;
     }
 
@@ -94,80 +106,7 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       TITLE
-       ======================================================== */
-
-    .main-title {
-        color: #5e35b1 !important;
-        font-size: 44px;
-        font-weight: 800;
-        text-align: center;
-        margin-bottom: 5px;
-    }
-
-
-    .subtitle {
-        color: #654d73 !important;
-        text-align: center;
-        font-size: 17px;
-        margin-bottom: 20px;
-    }
-
-
-    /* ========================================================
-       HEADER
-       ======================================================== */
-
-    .devotional-header {
-        background:
-            linear-gradient(
-                135deg,
-                #4527a0,
-                #7b1fa2,
-                #311b92
-            );
-
-        border-radius: 20px;
-
-        padding: 25px;
-
-        text-align: center;
-
-        margin-bottom: 25px;
-
-        box-shadow:
-            0 8px 25px
-            rgba(81, 45, 168, 0.25);
-    }
-
-
-    .devotional-header .om {
-        font-size: 48px;
-        line-height: 1;
-        margin-bottom: 8px;
-    }
-
-
-    .devotional-header .title {
-        color: #ffffff !important;
-        font-size: 30px;
-        font-weight: 800;
-        line-height: 1.2;
-    }
-
-
-    .devotional-header .description {
-        color: #f7efff !important;
-        font-size: 16px;
-        margin-top: 8px;
-        line-height: 1.4;
-    }
-
-
-    /* ========================================================
-       SIDEBAR
-       ======================================================== */
+    /* SIDEBAR */
 
     section[data-testid="stSidebar"] {
         background:
@@ -181,22 +120,15 @@ st.markdown(
         border-right: 2px solid #b39ddb;
     }
 
-
     section[data-testid="stSidebar"] * {
         color: #f5edff !important;
     }
-
 
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3 {
         color: #e1bee7 !important;
     }
-
-
-    /* ========================================================
-       SIDEBAR RADIO
-       ======================================================== */
 
     section[data-testid="stSidebar"]
     div[role="radiogroup"] label {
@@ -205,28 +137,20 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       TEXT AREA
-       ======================================================== */
+    /* TEXT AREA */
 
     .stTextArea textarea {
         background-color: #fdfaff !important;
-
         color: #291535 !important;
-
         border: 2px solid #b39ddb !important;
-
-        border-radius: 12px !important;
-
+        border-radius: 10px !important;
         font-size: 16px !important;
     }
-
 
     .stTextArea textarea::placeholder {
         color: #806b8a !important;
         opacity: 1 !important;
     }
-
 
     .stTextArea textarea:focus {
         border: 2px solid #7e57c2 !important;
@@ -237,21 +161,17 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       SELECT / INPUT
-       ======================================================== */
+    /* TEXT INPUT */
 
     .stTextInput input {
         background-color: #fdfaff !important;
         color: #291535 !important;
         border: 2px solid #b39ddb !important;
-        border-radius: 12px !important;
+        border-radius: 10px !important;
     }
 
 
-    /* ========================================================
-       BUTTONS
-       ======================================================== */
+    /* BUTTONS */
 
     .stButton > button {
         background:
@@ -262,20 +182,15 @@ st.markdown(
             ) !important;
 
         color: #ffffff !important;
-
         border: none !important;
-
-        border-radius: 10px !important;
-
+        border-radius: 9px !important;
         font-weight: 700 !important;
-
-        padding: 10px 18px !important;
+        padding: 8px 16px !important;
 
         box-shadow:
-            0 4px 12px
-            rgba(81, 45, 168, 0.20);
+            0 3px 10px
+            rgba(81, 45, 168, 0.18);
     }
-
 
     .stButton > button:hover {
         background:
@@ -288,15 +203,12 @@ st.markdown(
         color: #ffffff !important;
     }
 
-
     .stButton > button p {
         color: #ffffff !important;
     }
 
 
-    /* ========================================================
-       SLIDER
-       ======================================================== */
+    /* SLIDER */
 
     .stSlider label {
         color: #5e35b1 !important;
@@ -304,9 +216,7 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       RADIO
-       ======================================================== */
+    /* RADIO */
 
     div[role="radiogroup"] label {
         color: #2d1838 !important;
@@ -314,27 +224,18 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       SUCCESS
-       ======================================================== */
+    /* ALERTS */
 
     div[data-testid="stAlert"] {
-        border-radius: 12px !important;
+        border-radius: 10px !important;
     }
-
-
-    /* ========================================================
-       INFO BOX
-       ======================================================== */
 
     div[data-testid="stAlert"] p {
         color: #291535 !important;
     }
 
 
-    /* ========================================================
-       METRIC
-       ======================================================== */
+    /* METRICS */
 
     div[data-testid="stMetric"] {
         background:
@@ -345,39 +246,30 @@ st.markdown(
             );
 
         border: 1px solid #c5b3e6;
-
-        border-radius: 14px;
-
-        padding: 15px;
+        border-radius: 12px;
+        padding: 12px;
 
         box-shadow:
-            0 4px 14px
-            rgba(81, 45, 168, 0.08);
+            0 3px 10px
+            rgba(81, 45, 168, 0.06);
     }
-
 
     div[data-testid="stMetricLabel"] {
         color: #654d73 !important;
     }
-
 
     div[data-testid="stMetricValue"] {
         color: #5e35b1 !important;
     }
 
 
-    /* ========================================================
-       EXPANDER
-       ======================================================== */
+    /* EXPANDER */
 
     div[data-testid="stExpander"] {
         background: #fdfaff !important;
-
         border: 1px solid #c5b3e6 !important;
-
-        border-radius: 12px !important;
+        border-radius: 10px !important;
     }
-
 
     div[data-testid="stExpander"] summary {
         color: #5e35b1 !important;
@@ -385,62 +277,46 @@ st.markdown(
     }
 
 
-    /* ========================================================
-       FILE UPLOADER
-       ======================================================== */
+    /* FILE UPLOADER */
 
     section[data-testid="stFileUploaderDropzone"] {
         background: #fdfaff !important;
-
         border: 2px dashed #9575cd !important;
-
-        border-radius: 14px !important;
+        border-radius: 12px !important;
     }
-
 
     section[data-testid="stFileUploaderDropzone"] * {
         color: #4a3655 !important;
     }
 
 
-    /* ========================================================
-       IMAGE
-       ======================================================== */
+    /* IMAGES */
 
     img {
-        border-radius: 12px;
+        border-radius: 10px;
     }
 
 
-    /* ========================================================
-       DIVIDER
-       ======================================================== */
+    /* DIVIDER */
 
     hr {
+        margin-top: 0.8rem !important;
+        margin-bottom: 0.8rem !important;
+
         border-color:
             rgba(103, 58, 183, 0.20) !important;
     }
 
 
-    /* ========================================================
-       FOOTER
-       ======================================================== */
+    /* REDUCE VERTICAL SPACE */
 
-    .footer {
-        text-align: center;
-
-        color: #6c5878 !important;
-
-        font-size: 14px;
-
-        padding: 12px 0 5px 0;
+    .stMarkdown {
+        margin-bottom: 0.3rem !important;
     }
 
-
-    .footer strong {
-        color: #5e35b1 !important;
+    div[data-testid="stVerticalBlock"] {
+        gap: 0.5rem;
     }
-
 
     </style>
     """,
@@ -658,7 +534,6 @@ def load_hand_landmarker():
     if not os.path.exists(
         HAND_MODEL_PATH
     ):
-
         return None
 
     BaseOptions = mp.tasks.BaseOptions
@@ -754,7 +629,6 @@ def sentence_vector(sentence):
         for word in words
 
         if word in word2vec_model
-
     ]
 
     if len(vectors) == 0:
@@ -944,9 +818,7 @@ def extract_hand_landmarks(image):
         landmarks.extend([
 
             landmark.x,
-
             landmark.y,
-
             landmark.z
 
         ])
@@ -1038,29 +910,13 @@ def predict_mudra(image):
 
 
 # ============================================================
-# HEADER
+# SIMPLE PLAIN TITLE
 # ============================================================
 
-st.markdown(
-    """
-    <div class="devotional-header">
+st.title("🙏 Devotional AI Assistant")
 
-        <div class="om">
-            🕉️
-        </div>
-
-        <div class="title">
-            🙏 Devotional AI Assistant
-        </div>
-
-        <div class="description">
-            Discover wisdom through AI, devotion and
-            Indian spiritual heritage
-        </div>
-
-    </div>
-    """,
-    unsafe_allow_html=True
+st.write(
+    "Discover wisdom through AI, devotion and Indian spiritual heritage"
 )
 
 
@@ -1072,10 +928,10 @@ st.sidebar.markdown(
     """
     <div style="
         text-align:center;
-        font-size:24px;
+        font-size:23px;
         font-weight:800;
         color:#e1bee7 !important;
-        padding:8px 0 12px 0;
+        padding:4px 0 8px 0;
     ">
         🕉️ Devotional AI
     </div>
@@ -1083,7 +939,6 @@ st.sidebar.markdown(
     unsafe_allow_html=True
 )
 
-st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "🪔 Navigation",
@@ -1106,8 +961,7 @@ if page == "💬 Intent Detection":
     )
 
     st.write(
-        "Enter a devotional question "
-        "or use your microphone."
+        "Enter a devotional question or use your microphone."
     )
 
     st.subheader(
@@ -1134,16 +988,14 @@ if page == "💬 Intent Detection":
         )
 
         st.write(
-            f"**Recognized Speech:** "
-            f"{spoken_text}"
+            f"**Recognized Speech:** {spoken_text}"
         )
 
     text_input = st.text_area(
         "Enter your question:",
-        placeholder=(
-            "Example: How can I control my mind?"
-        ),
-        key="intent_text_area"
+        placeholder="Example: How can I control my mind?",
+        key="intent_text_area",
+        height=110
     )
 
     if st.button(
@@ -1160,8 +1012,7 @@ if page == "💬 Intent Detection":
         if not final_text.strip():
 
             st.warning(
-                "Please enter a question "
-                "or use the microphone."
+                "Please enter a question or use the microphone."
             )
 
         else:
@@ -1176,24 +1027,30 @@ if page == "💬 Intent Detection":
                     final_text
                 )
 
+                col1, col2 = st.columns(2)
+
+                with col1:
+
+                    st.subheader(
+                        "Recognized Text"
+                    )
+
+                    st.write(
+                        final_text
+                    )
+
+                with col2:
+
+                    st.subheader(
+                        "Processed Text"
+                    )
+
+                    st.write(
+                        processed_text
+                    )
+
                 st.subheader(
-                    "Recognized Text"
-                )
-
-                st.write(
-                    final_text
-                )
-
-                st.subheader(
-                    "Processed Text"
-                )
-
-                st.write(
-                    processed_text
-                )
-
-                st.subheader(
-                    "Predicted Intent"
+                    "🔮 Predicted Intent"
                 )
 
                 st.success(
@@ -1201,7 +1058,7 @@ if page == "💬 Intent Detection":
                 )
 
                 st.subheader(
-                    "Prediction Probability"
+                    "🎯 Prediction Probability"
                 )
 
                 st.progress(
@@ -1235,9 +1092,8 @@ elif page == "📜 Ramayana":
     )
 
     st.write(
-        "Ask a question about the "
-        "Ramayana. You can type your "
-        "question or speak it."
+        "Ask a question about the Ramayana. "
+        "You can type your question or speak it."
     )
 
     st.subheader(
@@ -1264,16 +1120,14 @@ elif page == "📜 Ramayana":
         )
 
         st.write(
-            f"**Recognized Speech:** "
-            f"{ramayana_spoken_text}"
+            f"**Recognized Speech:** {ramayana_spoken_text}"
         )
 
     query = st.text_area(
         "Enter your Ramayana question:",
-        placeholder=(
-            "Example: What did Hanuman do in Lanka?"
-        ),
-        key="ramayana_query_area"
+        placeholder="Example: What did Hanuman do in Lanka?",
+        key="ramayana_query_area",
+        height=110
     )
 
     number_results = st.slider(
@@ -1297,8 +1151,7 @@ elif page == "📜 Ramayana":
         if not final_query.strip():
 
             st.warning(
-                "Please enter a question "
-                "or use the microphone."
+                "Please enter a question or use the microphone."
             )
 
         else:
@@ -1311,8 +1164,7 @@ elif page == "📜 Ramayana":
                 )
 
                 st.success(
-                    f"Found {len(results)} "
-                    f"relevant verses."
+                    f"Found {len(results)} relevant verses."
                 )
 
                 for i, result in enumerate(
@@ -1378,20 +1230,17 @@ elif page == "🤲 Mudra Recognition":
     )
 
     st.write(
-        "Use your camera or upload an image "
-        "of a hand Mudra."
+        "Use your camera or upload an image of a hand Mudra."
     )
 
     if hand_landmarker is None:
 
         st.error(
-            "MediaPipe hand_landmarker.task "
-            "was not found."
+            "MediaPipe hand_landmarker.task was not found."
         )
 
         st.info(
-            "Place hand_landmarker.task "
-            "in the same folder as app.py."
+            "Place hand_landmarker.task in the same folder as app.py."
         )
 
     else:
@@ -1480,34 +1329,39 @@ elif page == "🤲 Mudra Recognition":
                     if mudra_name is None:
 
                         st.error(
-                            "No hand was detected "
-                            "in the image."
+                            "No hand was detected in the image."
                         )
 
                     else:
 
-                        st.subheader(
-                            "🔮 Predicted Mudra"
-                        )
+                        col1, col2 = st.columns(2)
 
-                        st.success(
-                            mudra_name
-                        )
+                        with col1:
 
-                        st.subheader(
-                            "🎯 Prediction Probability"
-                        )
-
-                        st.progress(
-                            min(
-                                probability / 100,
-                                1.0
+                            st.subheader(
+                                "🔮 Predicted Mudra"
                             )
-                        )
 
-                        st.write(
-                            f"{probability:.2f}%"
-                        )
+                            st.success(
+                                mudra_name
+                            )
+
+                        with col2:
+
+                            st.subheader(
+                                "🎯 Probability"
+                            )
+
+                            st.write(
+                                f"{probability:.2f}%"
+                            )
+
+                            st.progress(
+                                min(
+                                    probability / 100,
+                                    1.0
+                                )
+                            )
 
                         if mudra_name in mudra_info:
 
@@ -1515,27 +1369,33 @@ elif page == "🤲 Mudra Recognition":
                                 mudra_name
                             ]
 
-                            st.subheader(
-                                "🌸 Meaning"
-                            )
+                            col1, col2 = st.columns(2)
 
-                            st.write(
-                                info.get(
-                                    "meaning",
-                                    "Information unavailable."
+                            with col1:
+
+                                st.subheader(
+                                    "🌸 Meaning"
                                 )
-                            )
 
-                            st.subheader(
-                                "📖 Significance"
-                            )
-
-                            st.write(
-                                info.get(
-                                    "significance",
-                                    "Information unavailable."
+                                st.write(
+                                    info.get(
+                                        "meaning",
+                                        "Information unavailable."
+                                    )
                                 )
-                            )
+
+                            with col2:
+
+                                st.subheader(
+                                    "📖 Significance"
+                                )
+
+                                st.write(
+                                    info.get(
+                                        "significance",
+                                        "Information unavailable."
+                                    )
+                                )
 
                 except Exception as e:
 
@@ -1547,19 +1407,19 @@ elif page == "🤲 Mudra Recognition":
 
 
 # ============================================================
-# FOOTER
+# COMPACT FOOTER
 # ============================================================
-
-st.divider()
 
 st.markdown(
     """
-    <div class="footer">
-
-        🙏 <strong>Devotional AI Assistant</strong>
-
-        <br>
-
+    <div style="
+        text-align:center;
+        color:#6c5878;
+        font-size:13px;
+        padding:5px 0 0 0;
+    ">
+        🙏 Devotional AI Assistant
+        &nbsp; | &nbsp;
         🧠 NLP + Word2Vec + TF-IDF
         &nbsp; | &nbsp;
         🎤 Speech-to-Text
@@ -1567,11 +1427,6 @@ st.markdown(
         📜 Ramayana Retrieval
         &nbsp; | &nbsp;
         🤲 MediaPipe Mudra Recognition
-
-        <br>
-
-        🕉️ AI for exploring Indian devotional knowledge
-
     </div>
     """,
     unsafe_allow_html=True
