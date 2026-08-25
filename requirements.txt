@@ -1,0 +1,9 @@
+streamlit
+joblib
+numpy
+nltk
+opencv-python-headless
+mediapipe
+gensim
+scikit-learn
+streamlit-mic-recorder
