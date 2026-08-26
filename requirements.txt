@@ -1,9 +1,10 @@
 streamlit
 numpy==1.26.4
-opencv-python-headless==4.10.0.84
-mediapipe==0.10.21
+pandas
 scikit-learn==1.6.1
 joblib==1.4.2
-gensim==4.3.3
 nltk
-streamlit-mic-recorder
+mediapipe==0.10.21
+opencv-contrib-python==4.11.0.86
+streamlit-mic-recorder==0.0.8
+gensim==4.3.3
